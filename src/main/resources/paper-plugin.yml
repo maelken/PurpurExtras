@@ -4,3 +4,9 @@ main: "org.purpurmc.purpurextras.PurpurExtras"
 api-version: '26.1.2'
 authors: [ YouHaveTrouble ]
 description: "${description}"
+dependencies:
+  server:
+    WorldGuard:
+      load: BEFORE
+      required: false
+      join-classpath: true
