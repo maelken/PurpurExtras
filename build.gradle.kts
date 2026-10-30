@@ -27,10 +27,6 @@ repositories {
     }
 
     maven {
-        url = uri("https://maven.enginehub.org/repo/")
-    }
-
-    maven {
         url = uri("https://libraries.minecraft.net")
     }
 
@@ -43,18 +39,6 @@ dependencies {
     api("com.github.YouHaveTrouble:Entiddy:v2.0.1")
     api("org.reflections:reflections:0.10.2")
     compileOnly("org.purpurmc.purpur:purpur-api:26.1.2.build.+")
-    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.14") {
-        isTransitive = false
-    }
-    compileOnly("com.sk89q.worldguard:worldguard-core:7.0.14") {
-        isTransitive = false
-    }
-    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.3.0") {
-        isTransitive = false
-    }
-    compileOnly("com.sk89q.worldedit:worldedit-core:7.3.0") {
-        isTransitive = false
-    }
 }
 
 group = "org.purpurmc.purpurextras"
