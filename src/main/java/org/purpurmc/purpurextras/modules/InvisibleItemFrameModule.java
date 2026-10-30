@@ -1,12 +1,14 @@
 package org.purpurmc.purpurextras.modules;
 
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.permissions.Permission;
@@ -15,8 +17,10 @@ import org.purpurmc.purpurextras.PurpurExtras;
 import org.purpurmc.purpurextras.util.WorldGuardHook;
 
 /**
- * Right click when sneaking on an item frame with item inside of it will make the item frame invisible.
- * Requires purpurextras.invisibleframes permission and, if WorldGuard is installed, build access in the region.
+ * Right click when sneaking on an item frame with an item inside of it will make the item frame invisible.
+ * Requires purpurextras.invisibleframes permission.
+ * Players who are not allowed to build at the frame cannot toggle it.
+ * WorldGuard is checked explicitly because its item-frame-rotation flag can override build on interact.
  */
 public class InvisibleItemFrameModule implements PurpurExtrasModule, Listener {
 
@@ -52,9 +56,28 @@ public class InvisibleItemFrameModule implements PurpurExtrasModule, Listener {
         if (itemFrame.getItem().getType().equals(Material.AIR)) return;
         if (!player.hasPermission(invisFramePermission)) return;
         if (!WorldGuardHook.canBuild(player, itemFrame.getLocation())) return;
+        if (!canBuild(player, itemFrame)) return;
 
         event.setCancelled(true);
         itemFrame.setVisible(!itemFrame.isVisible());
         itemFrame.setFixed(!itemFrame.isFixed());
+    }
+
+    /**
+     * Protection plugins decide build access by cancelling a block break.
+     * The block is not actually broken.
+     */
+    private boolean canBuild(Player player, ItemFrame itemFrame) {
+        Block occupied = itemFrame.getLocation().getBlock();
+        Block attached = occupied.getRelative(itemFrame.getAttachedFace());
+        if (!isBreakAllowed(player, attached)) return false;
+        if (attached.equals(occupied)) return true;
+        return isBreakAllowed(player, occupied);
+    }
+
+    private boolean isBreakAllowed(Player player, Block block) {
+        BlockBreakEvent breakEvent = new BlockBreakEvent(block, player);
+        player.getServer().getPluginManager().callEvent(breakEvent);
+        return !breakEvent.isCancelled();
     }
 }
